@@ -7,6 +7,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import generatedFromXsd.EchoMessage;
+import generatedFromXsd.ObjectFactory;
+
 public class Connection extends Thread {
     DataInputStream in;
     DataOutputStream out;
@@ -26,8 +33,16 @@ public class Connection extends Thread {
     
     public void run(){
       try {// an echo server
+
+    	    ObjectFactory of = new ObjectFactory();
+    		JAXBContext jaxb;
+			jaxb = JAXBContext.newInstance(EchoMessage.class);
+			
+			Unmarshaller unmarshaller = jaxb.createUnmarshaller();
+			
     	  	while(true){
-                 String data = in.readUTF();
+    	  		EchoMessage em = (EchoMessage) unmarshaller.unmarshal(in);
+                 String data = em.getContent();
                  s.addNachricht(data.trim());
                  if (data.trim().equals("exit")){
                 	 TCPClient.stop();
@@ -62,6 +77,9 @@ public class Connection extends Thread {
     	  	}
       } catch(EOFException e) {System.out.println("EOF:"+e.getMessage()); e.printStackTrace();
     } catch(IOException e) {System.out.println("IO:"+e.getMessage()); e.printStackTrace();}
+       catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();}
   }
 }
 
