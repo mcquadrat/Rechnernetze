@@ -1,5 +1,6 @@
 package echoserver;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -12,6 +13,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import generatedFromXsd.EchoMessage;
+import generatedFromXsd.EchoMessageType;
 import generatedFromXsd.ObjectFactory;
 
 public class Connection extends Thread {
@@ -41,17 +43,20 @@ public class Connection extends Thread {
 			Unmarshaller unmarshaller = jaxb.createUnmarshaller();
 			
     	  	while(true){
-    	  		EchoMessage em = (EchoMessage) unmarshaller.unmarshal(in);
+    	  		String message = in.readUTF();
+    	  		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
+    					message.getBytes());
+    	  		EchoMessage em = (EchoMessage) unmarshaller.unmarshal(byteArrayInputStream);
                  String data = em.getContent();
                  s.addNachricht(data.trim());
-                 if (data.trim().equals("exit")){
+                 if (em.getType().equals(EchoMessageType.EXIT)){
                 	 TCPClient.stop();
                 	 break;
                  }
-                 if (data.trim().startsWith("showstat")){
+                 if (em.getType().equals(EchoMessageType.SHOWSTAT)){
                 	 out.writeUTF(s.toString());
                  }
-                 if (data.trim().startsWith("showallstat")){
+                 if (em.getType().equals(EchoMessageType.SHOWALLSTAT)){
                 	 for(Connection c : list){
                 		 out.writeUTF(c.s.toString());
                 	 }
@@ -66,8 +71,7 @@ public class Connection extends Thread {
    		      	 
    		      	 System.out.println("(IP:"+localAddress+" | Port:"+port+" )  "+data);
 
-                 if (data.trim().startsWith("broadcast")){
-                	 data = data.trim().substring(10); // Ein Leerzeichen oder Doppelpunkt dazwischen
+                 if (em.getType().equals(EchoMessageType.BROADCAST)){
                 	 for(Connection c : TCPServer.conList){
                 		 c.out.writeUTF("From: (IP:"+localAddress+" | Port:"+port+" )  "+data);
                 	 }
