@@ -2,10 +2,12 @@ package client;
  
 import server.IChatServer;
  
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -124,7 +126,20 @@ public class ChatClient extends JFrame implements IChatClientCallback {
   */
   public void receiveChat(String userID, String message)
   throws RemoteException {
-	  textArea.setText(textArea.getText()+"\n"+userID+": "+message);
+	  
+	  if (message.split(" ")[0].equals("/pn")){ //Falls private Nachricht
+		  String [] messageSplit = message.split(" ");
+		  String user = messageSplit[1];
+		  String messageAlone = "";
+		  for (int i = 2; i < messageSplit.length; i++){
+			  messageAlone += messageSplit[i]+" ";
+		  }
+		  if(this.userName.equals(user) || this.userName.equals(userID)){
+			  textArea.setText(textArea.getText()+"\nPN von "+userID+" fuer "+user+" : "+messageAlone);
+		  }
+	  } else {
+		  textArea.setText(textArea.getText()+"\n"+userID+": "+message);
+	  }
   }
  
   /**
@@ -133,7 +148,6 @@ public class ChatClient extends JFrame implements IChatClientCallback {
   */
   public void receiveUserLogin(String userID, Object[] users)
   throws RemoteException {
-    //TODO
 	  textArea.setText(textArea.getText()+"\n"+userID+" ist eingeloggt ");
 	  userList.setText("");
 	  for(Object user : users){
@@ -165,7 +179,6 @@ public class ChatClient extends JFrame implements IChatClientCallback {
   private class MyWindowListener extends WindowAdapter {
     public void windowClosing(WindowEvent e) {
       try {
-        //TODO
     	  serverObject.logout(userName);
       } catch (Exception ex) {
         ex.printStackTrace();
@@ -177,7 +190,6 @@ public class ChatClient extends JFrame implements IChatClientCallback {
   private class ExitMenuItemListener implements ActionListener {
     public void actionPerformed(ActionEvent e) {
       try {
-        //TODO
     	  serverObject.logout(userName);
       } catch (Exception ex) {
         ex.printStackTrace();
@@ -215,6 +227,7 @@ public class ChatClient extends JFrame implements IChatClientCallback {
     public void actionPerformed(ActionEvent e) {
       try {
         // Logout
+    	textArea.setText(textArea.getText()+"\n"+userName+" ist ausgeloggt");
         serverObject.logout(userName);
         setTitle("RMI-Chat");
         userName = "";
@@ -232,7 +245,6 @@ public class ChatClient extends JFrame implements IChatClientCallback {
       String message = inputField.getText();
       if (message.length() > 0) {
         try {
-          //TODO
         	serverObject.chat(userName, message);
         } catch (Exception ex) {
           ex.printStackTrace();

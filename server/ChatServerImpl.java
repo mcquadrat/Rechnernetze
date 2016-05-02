@@ -51,8 +51,9 @@ public class ChatServerImpl extends UnicastRemoteObject implements IChatServer {
 		  return;
 	  }
 	  for(IChatClientCallback user : users.values()){
-    	  user.receiveChat(userID, message);
-      }
+		 user.receiveChat(userID, message);
+	  }
+	  
   }
  
   public static void main(String[] args) {
