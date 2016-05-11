@@ -57,6 +57,7 @@ public class ClientImplementation implements ClientCallbackInterface {
 			}
 		}
 		sc.close();
+		System.exit(0);
 	}
 
 	@Override
